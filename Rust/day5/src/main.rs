@@ -42,6 +42,11 @@ fn part1(text: &str) -> Vec<i32> {
     let mut count = 0;
     let mut count2 = 0;
 
+    // This loops through all lines of text, but only cares about the ones with
+    // commas. These lines are sequences of values, and using the rules list
+    // created above, we must make sure that the sequence is valid. If it is not
+    // valid, we call the korjaa() function which finds the valid order and returns
+    // the middle value of the corrected order.
     for line in text.lines() {
         if line.contains(",") {
             let mut passed = true;
@@ -49,10 +54,15 @@ fn part1(text: &str) -> Vec<i32> {
             let sequence: Vec<&str> = line.split(",").collect();
             for value in &sequence {
                 if kieletty.contains(value) {
+                    // A violation was found
                     passed = false;
                     break;
                 } else {
                     if kieletty_kartta.contains_key(value) {
+                        // A violation was NOT found, but the value has a list
+                        // of other values that cannot proceed it. Add these
+                        // to the verboten list before evaluating the proceeding
+                        // values.
                         for item in kieletty_kartta.get(value).unwrap() {
                             kieletty.push(item);
                         }
@@ -60,13 +70,19 @@ fn part1(text: &str) -> Vec<i32> {
                 }
             }
             if passed {
+                // The sequence was valid: add the middle element to the sum for part 1
                 count += sequence[sequence.len() / 2].parse::<i32>().unwrap();
             } else {
+                // The sequence was invalid: korjaa() will return the middle element of
+                // the corrected sequence, which we add to the sum for part 2
                 count2 += korjaa(sequence, &kieletty_kartta);
             }
         }
     }
 
+    // I don't know of a cleaner way to do this in Rust, but I just want to return
+    // the values of parts 1 and 2 to the main function. I make a vector and push
+    // both results to it, and return said vector.
     let mut result = Vec::<i32>::new();
     result.push(count);
     result.push(count2);
