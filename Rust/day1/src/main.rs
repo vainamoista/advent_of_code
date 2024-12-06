@@ -4,7 +4,7 @@ use std::path::Path;
 //use std::vec;
 
 fn main() {
-    let path = Path::new("AdventCode/day1_input.txt");
+    let path = Path::new("day1_input.txt");
 
     let mut file = File::open(&path).expect("Need valid file.");
 
