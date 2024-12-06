@@ -1,0 +1,53 @@
+text = "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#..."
+
+
+movement = {
+  "n": [-1,0],
+  "s": [1,0],
+  "e": [0,1],
+  "w": [0,-1]
+}
+nextDir = {
+  n: "e",
+  e: "s",
+  s: "w",
+  w: "n"
+}
+
+startLoc = text.index("^")
+splitText = text.split("\n")
+i = nil
+j = nil
+dir = :n
+
+splitText.each_with_index { | line, index |
+  j = line.index("^")
+  if j != nil
+    i = index
+    break
+  end
+}
+
+
+
+while i>=0 && i<splitText.length() && j>=0 && j<splitText[0].length()
+  new_i = i + movement[dir][0]
+  new_j = j + movement[dir][1]
+  
+  if splitText[new_i].get(new_j) == "#"
+    puts "ok"
+  end
+
+
+  i = new_i
+  j = new_j
+end
