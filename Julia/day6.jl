@@ -122,6 +122,16 @@ function part1()
         end
     end
 
+    f = open("output.txt","w");
+    for i=1:size(textArray)[1]
+        for j=1:size(textArray)[2]
+            write(f, textArray[i,j])
+        end
+        write(f, "\n");
+    end
+
+    close(f)
+
     return (sum, textArray)
 end
 

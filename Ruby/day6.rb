@@ -12,6 +12,8 @@ text = "....#.....
 splitText = text.split("\n")
 =end
 
+class 
+
 splitText = File.read("day6_input.txt").split
 
 movement = {
@@ -66,3 +68,9 @@ splitText.each { | line |
 }
 
 puts count
+
+def addy(n1, n2)
+  n1 + n2
+end
+
+addy(7,6)
