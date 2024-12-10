@@ -151,7 +151,7 @@ begin
 			end
 			
 		end
-		(count, countmas)
+		return (count, countmas)
 	end
 end
 
@@ -190,6 +190,7 @@ M.M.M.M.M.
 	real_input = readlines(open("day4_input.txt"))
 
 	(xmas, x_mas) = count_xmas(test_input_3)
+
 	println("part 1 result: " * string(xmas))
 	println("part 2 result: " * string(x_mas))
 	println(stoopid_search(real_input))

@@ -21,13 +21,10 @@ fn part1() {
     let mut num_blocks = 0;
 
     let char_it = input.chars();
-    loop {
-        
-    }
+
     let int_val = i.parse().unwrap();
 
-        num_blocks += int_val;
-    }
+    num_blocks += int_val;
 
     println!("{}", input.len());
 }

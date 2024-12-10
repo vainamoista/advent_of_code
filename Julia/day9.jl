@@ -37,7 +37,14 @@ function getInput()
 
     test = "2333133121414131402"
 
-    return test
+    return text
+end
+
+# ╔═╡ 78f437d6-71e0-46c8-aeb8-e1b22dbbf8ec
+begin
+	strResult = []
+	append!(strResult, repeat(string(8), 5))
+	repeat([string(8)], 5)
 end
 
 # ╔═╡ a6a8cbff-3e3f-4c29-ab1b-563c19701eae
@@ -60,11 +67,15 @@ end
 function move2(values, lengths, thisValue)
 	thisIndex = findfirst(values .== thisValue)
 	thisLength = lengths[thisIndex]
+	#println("move2() thisValue: ", thisValue)
+	#println("move2() thisLength: ", thisLength)
+	#println("move2() before: ", values)
+	#println("move2() before: ", lengths)
 
-	for index in eachindex(values)
+	for index in 1:thisIndex-1
 		if values[index] != -1 || lengths[index] < thisLength
 			continue
-		elseif values[index] == -1 && lengths[index] > thisLength
+		elseif lengths[index] == thisLength
 			#println("move2() swapping ", index, " with ", thisIndex)
 			values[index] = thisValue
 			values[thisIndex] = -1
@@ -82,6 +93,8 @@ function move2(values, lengths, thisValue)
 		end
 	end
 
+	#println(values)
+	#println(lengths)
 	return simplify(values, lengths)
 end
 
@@ -185,7 +198,7 @@ function part1()
 end
 
 # ╔═╡ 249b16d7-b933-416a-bc10-e1ed971832ef
-function part2()
+function part2(toWhat=1)
 	input = getInput()
 	blocks = toBlocks(input)
 
@@ -198,7 +211,7 @@ function part2()
 
 	maxValue = parse(Int, blocks[index])
 
-	for value in maxValue:-1:1
+	for value in maxValue:-1:toWhat
 		#println("Now for value ", value, "! <><><>")
 		blocks = move(blocks, string(value))
 		#println("Result: ", join(blocks))
@@ -213,14 +226,8 @@ function part2()
             result = result + ((index-1)*parse(Int, blocks[index]))
         end
     end
-	println("part2():  ", join(blocks))
+	println("part2():  ", blocks)
     return result
-end
-
-# ╔═╡ 8ca2f0eb-2f95-4f64-9ddc-370ea513f165
-function main()
-	#(("Part 1: " * string(part1())), ("Part 2: " * string(part2())))
-	part2()
 end
 
 # ╔═╡ 15cc7593-548d-48b3-9b4e-85f162844aae
@@ -245,7 +252,7 @@ function toBlocks2(text)
 end
 
 # ╔═╡ 3aa7e902-5f98-4da9-afb4-cc2257d77d11
-function part22()
+function part22(toWhat=1)
 	(values,lengths) = toBlocks2(getInput())
 
 	#println("part22(): ", values)
@@ -254,37 +261,43 @@ function part22()
 	#println("part22(): ", typeof(values))
 	#println("part22(): ", typeof(maxValue))
 
-	for value in maxValue:-1:1
+	for value in maxValue:-1:toWhat
 		(values, lengths) = move2(values, lengths, value)
 	end
 
-	strResult = ""
+	strResult = []
 	for i in eachindex(values)
 		if values[i] == -1
-			strResult *= repeat(".",lengths[i])
+			append!(strResult, repeat(["."],lengths[i]))
 		else
-			strResult *= repeat(string(values[i]), lengths[i])
+			append!(strResult, repeat([string(values[i])], lengths[i]))
 		end
 	end
 
+	#println("part22(): ", strResult)
 	result = 0
 
 	for index in 1:length(strResult)
-        if strResult[index] != '.'
+        if strResult[index] != "."
 			#println(strResult[index])
 			#println(typeof(strResult[index]))
             result = result + ((index-1)*parse(Int, strResult[index]))
         end
     end
 
-	println("part22(): ", strResult)
+	#println("part22(): ", strResult)
 	return result
+end
+
+# ╔═╡ 8ca2f0eb-2f95-4f64-9ddc-370ea513f165
+function main()
+	println("Part 1: " * string(part1()))
+	println("Part 2: " * string(part22()))
 end
 
 # ╔═╡ f4540ea2-1bb8-4224-a8cb-767fc0f9bf30
 begin
-	part2()
-	part22()
+	main()
 end
 
 # ╔═╡ Cell order:
@@ -297,6 +310,7 @@ end
 # ╠═1ed598e4-fea3-4466-9112-93ded543f95f
 # ╠═249b16d7-b933-416a-bc10-e1ed971832ef
 # ╠═3aa7e902-5f98-4da9-afb4-cc2257d77d11
+# ╠═78f437d6-71e0-46c8-aeb8-e1b22dbbf8ec
 # ╠═a6a8cbff-3e3f-4c29-ab1b-563c19701eae
 # ╠═3f50b915-f2e9-4cc1-a001-74df83860472
 # ╠═84dc46be-3e09-485b-96d7-b396505e10e5
