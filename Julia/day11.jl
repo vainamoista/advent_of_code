@@ -39,7 +39,8 @@ end
 function blink2(value::Int, currentBlink::Int, maxBlink::Int)
     #println(value)
     if currentBlink > maxBlink
-        return 1
+        %return 1
+        return value
     elseif value == 0
         #println("0 ", currentBlink, " ", maxBlink)
         if maxBlink - currentBlink <= 45 && maxBlink - currentBlink >= 1
@@ -184,8 +185,14 @@ function part2(input, numBlinks)
     values = parse.(Int,split(input, " "))
 
     result = 0
+    vals = []
     for value in values
         result += blink2(value, 1, numBlinks)
+        if vals[result]
+            vals[result] += 1
+        else
+            vals[result] = 1
+        end
     end
     return result
 end
