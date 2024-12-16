@@ -2,20 +2,22 @@ using BenchmarkTools
 
 function main()
     input = readline("day11_input.txt")
+    println(input)
     #input = "125 17"
 
 
     #@benchmark part1(input, 25)
     
-    println(part1(input, 25))
-    println(part2(input, 75))
+    #println(part1(input, 25))
+    #println(part2(input, 75))
 
     
-
-    #for i in 1:45
-    #    println("    elseif numSteps==", i)
-    #    println("        return ", part1("0", i))
-    #end
+    f = open("30.txt","w")
+    for i in 3:4096
+        line = string(part2(string(i), 35)) * "\n"
+        write(f, string(i) * " " * line)
+    end
+    close(f)
 
 end
 
@@ -39,21 +41,26 @@ end
 function blink2(value::Int, currentBlink::Int, maxBlink::Int)
     #println(value)
     if currentBlink > maxBlink
-        %return 1
-        return value
+        return 1
     elseif value == 0
         #println("0 ", currentBlink, " ", maxBlink)
-        if maxBlink - currentBlink <= 45 && maxBlink - currentBlink >= 1
+        if maxBlink - currentBlink <= 59 && maxBlink - currentBlink >= 1
             return zeroIn(maxBlink-currentBlink + 1)
         else
             return blink2(1, currentBlink+1, maxBlink)
         end
     elseif value == 1
         #println("1!")
-        if maxBlink - currentBlink <= 44 && maxBlink - currentBlink >= 0
+        if maxBlink - currentBlink <= 58 && maxBlink - currentBlink >= 0
             return zeroIn(maxBlink-currentBlink + 2)
         else
             return blink2(2024, currentBlink+1, maxBlink)
+        end
+    elseif value == 2
+        if maxBlink - currentBlink <= 57 && maxBlink - currentBlink >= 0
+            return twoIn(maxBlink-currentBlink +1)
+        else
+            return blink2(2*2024, currentBlink+1, maxBlink)
         end
     elseif iseven(length(digits(value)))
         len2 = Int(length(digits(value))/2)
@@ -165,11 +172,162 @@ function zeroIn(numSteps)
         return 288114305
     elseif numSteps==49
         return 437102505
+    elseif numSteps==50
+        return 663251546
+    elseif numSteps==51
+        return 1010392024
+    elseif numSteps==52
+        return 1529921658
+    elseif numSteps==53
+        return 2327142660
+    elseif numSteps==54
+        return 3537156082
+    elseif numSteps==55
+        return 5362947711
+    elseif numSteps==56
+        return 8161193535
+    elseif numSteps==57
+        return 12380334344
+    elseif numSteps==58
+        return 18810542532
+    elseif numSteps==59
+        return 28593873985
+    elseif numSteps==60
+        return 43369895096
     else
         println(numSteps)
         return "not valid"
     end
-end
+end # zeroIn
+
+function twoIn(numSteps)
+    if numSteps==1
+        return 1
+    elseif numSteps==2
+        return 2
+    elseif numSteps==3
+        return 4
+    elseif numSteps==4
+        return 4
+    elseif numSteps==5
+        return 6
+    elseif numSteps==6
+        return 12
+    elseif numSteps==7
+        return 16
+    elseif numSteps==8
+        return 19
+    elseif numSteps==9
+        return 30
+    elseif numSteps==10
+        return 57
+    elseif numSteps==11
+        return 92
+    elseif numSteps==12
+        return 111
+    elseif numSteps==13
+        return 181
+    elseif numSteps==14
+        return 295
+    elseif numSteps==15
+        return 414
+    elseif numSteps==16
+        return 661
+    elseif numSteps==17
+        return 977
+    elseif numSteps==18
+        return 1501
+    elseif numSteps==19
+        return 2270
+    elseif numSteps==20
+        return 3381
+    elseif numSteps==21
+        return 5463
+    elseif numSteps==22
+        return 7921
+    elseif numSteps==23
+        return 11819
+    elseif numSteps==24
+        return 18712
+    elseif numSteps==25
+        return 27842
+    elseif numSteps==26
+        return 42646
+    elseif numSteps==27
+        return 64275
+    elseif numSteps==28
+        return 97328
+    elseif numSteps==29
+        return 150678
+    elseif numSteps==30
+        return 223730
+    elseif numSteps==31
+        return 343711
+    elseif numSteps==32
+        return 525238
+    elseif numSteps==33
+        return 784952
+    elseif numSteps==34
+        return 1208065
+    elseif numSteps==35
+        return 1824910
+    elseif numSteps==36
+        return 2774273
+    elseif numSteps==37
+        return 4230422
+    elseif numSteps==38
+        return 6365293
+    elseif numSteps==39
+        return 9763578
+    elseif numSteps==40
+        return 14777945
+    elseif numSteps==41
+        return 22365694
+    elseif numSteps==42
+        return 34205743
+    elseif numSteps==43
+        return 51643260
+    elseif numSteps==44
+        return 78678894
+    elseif numSteps==45
+        return 119550250
+    elseif numSteps==46
+        return 181040219
+    elseif numSteps==46
+        return 181040219
+    elseif numSteps==47
+        return 276213919
+    elseif numSteps==48
+        return 417940971
+        return 417940971
+    elseif numSteps==49
+        return 635526775
+    elseif numSteps==50
+        return 967190364
+    elseif numSteps==51
+        return 1464254721
+    elseif numSteps==52
+        return 2230181584
+    elseif numSteps==53
+        return 3383369064
+    elseif numSteps==54
+        return 5136784035
+    elseif numSteps==55
+        return 7815929513
+    elseif numSteps==56
+        return 11846276236
+    elseif numSteps==57
+        return 18021119171
+    elseif numSteps==58
+        return 27366673929
+    elseif numSteps==59
+        return 41525589303
+    elseif numSteps==60
+        return 63172165494
+    else
+        return "not found"
+    end
+end #twoIn
 
 function part1(input, numBlinks)
     values = split(input, " ")
@@ -185,14 +343,8 @@ function part2(input, numBlinks)
     values = parse.(Int,split(input, " "))
 
     result = 0
-    vals = []
     for value in values
         result += blink2(value, 1, numBlinks)
-        if vals[result]
-            vals[result] += 1
-        else
-            vals[result] = 1
-        end
     end
     return result
 end
