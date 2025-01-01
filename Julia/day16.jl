@@ -1,147 +1,269 @@
-### A Pluto.jl notebook ###
-# v0.20.4
-
-using Markdown
-using InteractiveUtils
-
-# ╔═╡ 259058e4-ed13-4231-9597-5eefe805e17b
-function nextDir(currentDir)
-	if currentDir[2] == 0
-		return [(0,1), (0,-1)]
-	else
-		return [(1,0), (-1,0)]
-	end
+struct Dir
+    x::Int
+    y::Int
 end
 
-# ╔═╡ 19d7669b-59e4-4c1e-b33d-690b5d50ff52
-function doMaze(maze, position, direction, currentCost)
-	costMap = Array{Int}(undef, size(maze)[1], size(maze)[2])
-	location = findfirst(maze .== "S")
-	direction = (0,1)
-	
+struct Pos
+    row::Int
+    col::Int
 end
 
-# ╔═╡ ea186ad4-d52c-4910-aff6-2d67cf163d10
-function followThread(maze, position, direction, costMap)
-	row = position[1]
-	col = position[2]
-	while row > 1 && row < size(maze)[1] && col > 1 && col < size(maze)[2]
-		row += direction[1]
-		col += direction[2]
+prices = []
+numThreads = 0
 
-		
-		if (row, col) + nextDir(direction)[1] == "."
-			dir1 = nextDir(direction)[1]
-			pos1 = (row, col) + dir1
-			costMap[pos1[1],pos1[2]]
-			costMap = followThread(maze, pos1, dir1, costMap)
-		end
-
-		if (row, col) + nextDir(direction)[2] == "."
-			dir2 = nextDir(direction)[2]
-			pos2 = (row, col) + dir2
-			costMap = followThread(maze, pos2, dir2, costMap)
-		end
-
-		
-	end
-end
-
-# ╔═╡ ac48eaa7-1814-456e-86db-97b8f9fae3df
-undef == undef
-
-# ╔═╡ fc94f06f-34f1-4997-ae6e-75391c4fb09b
-function prettyPrint(kartta)
-	row1 = "   "
-	row2 = "   "
-	for j=1:size(kartta)[2]
-		strⱼ = string(j)
-		if length(strⱼ) == 2
-			if j%10 == 0
-				row1 *= strⱼ[1]
-			else
-				row1 *= " "
-			end
-			row2 *= strⱼ[2]
-		else
-			row1 *= " "
-			row2 *= strⱼ[1]
-		end
-	end
-
-	println(row1)
-	println(row2)
-	
-    for i = 1:size(kartta)[1]
-		strᵢ = string(i)
-		line = ""
-		if length(strᵢ) == 2
-			if i%10 == 0
-				line *= strᵢ[1]
-			else
-				line *= " "
-			end
-			line *= strᵢ[2]
-		elseif length(strᵢ) == 1
-			line *= " "
-			line *= strᵢ[1]
-		end
-        println(line * " " * join(kartta[i,:]))
+function nextDir1(dir::Dir)
+    if dir.x == 0
+        Dir(1,0)
+    else
+        Dir(0,1)
     end
-    println()
 end
 
-# ╔═╡ 320cd164-bf17-11ef-3aae-3d71496d5770
+function nextDir2(dir::Dir)
+    if dir.x == 0
+        Dir(-1,0)
+    else
+        Dir(0,-1)
+    end
+end
+
+function nextPos(pos::Pos, dir::Dir)
+    Pos(pos.row + dir.y, pos.col + dir.x)
+end
+
 function getInput(testing)
-	testText = split("###############
-#.......#....E#
-#.#.###.#.###.#
-#.....#.#...#.#
-#.###.#####.#.#
-#.#.#.......#.#
-#.#.#####.###.#
-#...........#.#
-###.#.#####.#.#
-#...#.....#.#.#
-#.#.#.###.#.#.#
-#.....#...#.#.#
-#.###.#.#.#.#.#
-#S..#.....#...#
-###############", "\n")
+    if testing
+        input = split("#################
+#...#...#...#..E#
+#.#.#.#.#.#.#.#.#
+#.#.#.#...#...#.#
+#.#.#.#.###.#.#.#
+#...#.#.#.....#.#
+#.#.#.#.#.#####.#
+#.#...#.#.#.....#
+#.#.#####.#.###.#
+#.#.#.......#...#
+#.#.###.#####.###
+#.#.#...#.....#.#
+#.#.#.#####.###.#
+#.#.#.........#.#
+#.#.#.#########.#
+#S#.............#
+#################", "\n")
+    else
+        f = open("day16_input.txt")
+        input = readlines(f)
+    end
 
-	testing ? text = testText : nothing
+    result = Array{String}(undef, length(input), length(input[1]))
+    println(length(input))
+    println(length(input[1]))
 
-	result = Array{String}(undef, length(text[1]), size(text)[1])
+    for i in eachindex(input)
+        for j in eachindex(input[i])
+            result[i,j] = string(input[i][j])
+        end
+    end
 
-	for i in 1:size(result)[1]
-		for j in 1:size(result)[2]
-			result[i,j] = string(text[i][j])
-		end
-	end
-
-	return result
+    return result
 end
 
-# ╔═╡ f19df63a-8616-4be7-9cd3-8641d0fa68cf
-function part1(testing)
-	maze = getInput(testing)
-
-	prettyPrint(maze)
-
-	costs = []
-
-	doMaze(maze)
+function main()
+    maze = getInput(false)
+    maze = blanket(maze, (1,100), (1,100))
+    maze = blanket(maze, (80,140),(80,140))
+    maze = simplify(maze, 100)
+    printMaze(maze)
+    mazeDo(maze)
 end
 
-# ╔═╡ 8cc04ce0-d0b8-4cec-96bb-e0320fa6f711
-part1(true)
+function printMaze(maze)
+    for i in 1:size(maze)[1]
+        println(join(maze[i,:]))
+    end
+end
 
-# ╔═╡ Cell order:
-# ╠═8cc04ce0-d0b8-4cec-96bb-e0320fa6f711
-# ╠═f19df63a-8616-4be7-9cd3-8641d0fa68cf
-# ╠═259058e4-ed13-4231-9597-5eefe805e17b
-# ╠═19d7669b-59e4-4c1e-b33d-690b5d50ff52
-# ╠═ea186ad4-d52c-4910-aff6-2d67cf163d10
-# ╠═ac48eaa7-1814-456e-86db-97b8f9fae3df
-# ╠═fc94f06f-34f1-4997-ae6e-75391c4fb09b
-# ╠═320cd164-bf17-11ef-3aae-3d71496d5770
+function mazeDo(maze)
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            if maze[i,j] == "S"
+                println("$i, $j")
+                mazeDo(maze, Pos(i,j), Dir(1,0), 0)
+                return
+            end
+        end
+    end
+end
+
+function mazeDo(maze, pos, dir, cost)
+    global numThreads += 1
+    if numThreads == 1200
+        printMaze(maze)
+    end
+    
+    #println("t: $(numThreads)")
+    
+    nPos = nextPos(pos, dir)
+    nDir1 = nextDir1(dir)
+    nDir2 = nextDir2(dir)
+    nPos1 = nextPos(pos, nDir1)
+    nPos2 = nextPos(pos, nDir2)
+
+    if nPos.row > 0 && nPos.row <= size(maze)[1] && nPos.col > 0 && nPos.col <= size(maze)[2]
+        if maze[nPos.row, nPos.col] == "E"
+            #println(maze)
+            println("\$$(cost+1)")
+            push!(prices, cost+1)
+            global numThreads -= 1
+            return
+        elseif maze[nPos.row, nPos.col] == "."
+            cMaze = deepcopy(maze)
+            cMaze[nPos.row, nPos.col] = "*"
+            mazeDo(cMaze, nPos, dir, cost + 1)
+        end
+    end    
+    if nPos1.row > 0 && nPos1.row <= size(maze)[1] && nPos1.col > 0 && nPos1.col <= size(maze)[2]
+        if maze[nPos1.row, nPos1.col] == "E"
+            #println(maze)
+            println("\$$(cost+1001)")
+            push!(prices, cost+1001)
+            global numThreads -= 1
+            return
+        elseif maze[nPos1.row, nPos1.col] == "."
+            cMaze = deepcopy(maze)
+            cMaze[nPos1.row, nPos1.col] = "*"
+            mazeDo(cMaze, nPos1, nDir1, cost + 1001)
+        end
+    end
+    if nPos2.row > 0 && nPos2.row <= size(maze)[1] && nPos2.col > 0 && nPos2.col <= size(maze)[2]
+        if maze[nPos2.row, nPos2.col] == "E"
+            #println(maze)
+            println("\$$(cost+1001)")
+            push(prices, cost+1001)
+            global numThreads -= 1
+            return
+        elseif maze[nPos2.row, nPos2.col] == "."
+            cMaze = deepcopy(maze)
+            cMaze[nPos2.row, nPos2.col] = "*"
+            mazeDo(cMaze, nPos2, nDir2, cost + 1001)
+        end
+    end
+    global numThreads -= 1
+end
+
+function numerify(maze)
+    complete = true
+
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            maze[i,j] == "." ? complete = false : nothing
+            maze[i,j] = determineCost(Pos(i,j), maze)
+        end
+    end
+
+    complete ? (return maze) : numerify(maze)
+end
+
+function determineCost(index::Pos, maze)
+    i = index.row
+    j = index.col
+
+    if maze[i,j] == "S"
+        maze[i,j] = 0
+        return maze
+    end
+
+    lowestVal = tryparse(Int, maze[i,j])
+    isnothing(lowestVal) ? lowestVal = -1 : nothing
+
+    try
+        if !isnothing(tryparse(Int, maze[i-1,j]))
+            if !isnothing(tryparse(Int, maze[i-2,j]))
+                value = parse(Int, maze[i-1,j]) + 1
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            else
+                value = parse(Int, maze[i-1,j]) + 1001
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            end
+        end
+    catch
+        nothing
+    end
+
+    try
+        if !isnothing(tryparse(Int, maze[i+1,j]))
+            if !isnothing(tryparse(Int, maze[i+2,j]))
+                value = parse(Int, maze[i+1,j]) + 1
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            else
+                value = parse(Int, maze[i+1,j]) + 1001
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            end
+        end
+    catch
+        nothing
+    end
+    
+    try
+        if !isnothing(tryparse(Int, maze[i,j-1]))
+            if !isnothing(tryparse(Int, maze[i,j-2]))
+                value = parse(Int, maze[i,j-1]) + 1
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            else
+                value = parse(Int, maze[i,j-1]) + 1001
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            end
+        end
+    catch
+        nothing
+    end
+
+    try
+        if !isnothing(tryparse(Int, maze[i,j+1]))
+            value = parse(Int, maze[i, j+1]) + 1
+            if !isnothing(tryparse(Int, maze[i,j+2]))
+                value = parse(Int, maze[i,j+1]) + 1
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            else
+                value = parse(Int, maze[i,j+1]) + 1001
+                lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
+            end
+        end
+    catch
+        nothing
+    end
+
+    return string(lowestVal)
+end
+
+function simplify(maze, recursionLevel)
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            if maze[i,j] == "."
+                numBounds = 0
+                maze[i+1,j] == "#" ? numBounds += 1 : nothing
+                maze[i-1,j] == "#" ? numBounds += 1 : nothing
+                maze[i,j+1] == "#" ? numBounds += 1 : nothing
+                maze[i,j-1] == "#" ? numBounds += 1 : nothing
+ 
+                numBounds >= 3 ? maze[i,j] = "#" : nothing
+            end
+        end
+    end
+
+    if recursionLevel == 1
+        return maze
+    else
+        return simplify(maze, recursionLevel - 1)
+    end     
+end
+
+function blanket(maze, rowLims, colLims)
+    for i in rowLims[1]:rowLims[2]
+        for j in colLims[1]:colLims[2]
+            maze[i,j] = "#"
+        end
+    end
+
+    return maze
+end
