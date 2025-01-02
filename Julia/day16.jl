@@ -151,7 +151,28 @@ function mazeDo(maze, pos, dir, cost)
     global numThreads -= 1
 end
 
-function numerify(maze)
+function part2(testing)
+    part1 = testing ? 11048 : 89460
+
+    maze = simplify(getInput(testing), 200)
+    nMaze = numerify(deepcopy(maze), 0)
+
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            if !isnothing(tryparse(Int, nMaze[i,j]))
+                if parse(Int, nMaze[i,j]) > part1
+                    nMaze[i,j] = "#"
+                    maze[i,j] = "#"
+                end
+            end
+        end
+    end
+
+    return maze, nMaze
+    #return maze
+end
+
+function numerify(maze, lastRun)
     complete = true
 
     for i in 1:size(maze)[1]
@@ -160,8 +181,17 @@ function numerify(maze)
             maze[i,j] = determineCost(Pos(i,j), maze)
         end
     end
+    #complete ? (return maze) : return numerify(maze)
 
-    complete ? (return maze) : numerify(maze)
+    if complete
+        if lastRun > 10
+            return maze
+        else
+            return numerify(maze, lastRun + 1)
+        end
+    else
+        return numerify(maze, 0)
+    end
 end
 
 function determineCost(index::Pos, maze)
@@ -169,8 +199,9 @@ function determineCost(index::Pos, maze)
     j = index.col
 
     if maze[i,j] == "S"
-        maze[i,j] = 0
-        return maze
+        return "0"
+    elseif maze[i,j] == "#"
+        return "#"
     end
 
     lowestVal = tryparse(Int, maze[i,j])
@@ -178,7 +209,7 @@ function determineCost(index::Pos, maze)
 
     try
         if !isnothing(tryparse(Int, maze[i-1,j]))
-            if !isnothing(tryparse(Int, maze[i-2,j]))
+            if !isnothing(tryparse(Int, maze[i-2,j])) && parse(Int, maze[i-1,j]) > parse(Int, maze[i-2,j])
                 value = parse(Int, maze[i-1,j]) + 1
                 lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
             else
@@ -190,9 +221,10 @@ function determineCost(index::Pos, maze)
         nothing
     end
 
+    
     try
         if !isnothing(tryparse(Int, maze[i+1,j]))
-            if !isnothing(tryparse(Int, maze[i+2,j]))
+            if !isnothing(tryparse(Int, maze[i+2,j])) && parse(Int, maze[i+1,j]) > parse(Int, maze[i+2,j])
                 value = parse(Int, maze[i+1,j]) + 1
                 lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
             else
@@ -203,10 +235,13 @@ function determineCost(index::Pos, maze)
     catch
         nothing
     end
-    
+
+        
     try
         if !isnothing(tryparse(Int, maze[i,j-1]))
-            if !isnothing(tryparse(Int, maze[i,j-2]))
+            if parse(Int, maze[i,j-1]) == 0
+                return "1"
+            elseif !isnothing(tryparse(Int, maze[i,j-2])) && parse(Int, maze[i,j-1]) > parse(Int, maze[i,j-2])
                 value = parse(Int, maze[i,j-1]) + 1
                 lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
             else
@@ -220,8 +255,7 @@ function determineCost(index::Pos, maze)
 
     try
         if !isnothing(tryparse(Int, maze[i,j+1]))
-            value = parse(Int, maze[i, j+1]) + 1
-            if !isnothing(tryparse(Int, maze[i,j+2]))
+            if !isnothing(tryparse(Int, maze[i,j+2])) && parse(Int, maze[i,j+1]) > parse(Int, maze[i,j+2])
                 value = parse(Int, maze[i,j+1]) + 1
                 lowestVal == -1 ? lowestVal = value : lowestVal = min(lowestVal, value)
             else
@@ -233,7 +267,8 @@ function determineCost(index::Pos, maze)
         nothing
     end
 
-    return string(lowestVal)
+    lowestVal == -1 ? (return ".") : (return string(lowestVal))
+    
 end
 
 function simplify(maze, recursionLevel)
