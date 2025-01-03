@@ -11,29 +11,24 @@ end
 prices = []
 numThreads = 0
 
-function nextDir1(dir::Dir)
-    if dir.x == 0
-        Dir(1,0)
-    else
-        Dir(0,1)
-    end
-end
-
-function nextDir2(dir::Dir)
-    if dir.x == 0
-        Dir(-1,0)
-    else
-        Dir(0,-1)
-    end
-end
-
-function nextPos(pos::Pos, dir::Dir)
-    Pos(pos.row + dir.y, pos.col + dir.x)
-end
-
 function getInput(testing)
     if testing
-        input = split("#################
+        input = split("###############
+#.......#....E#
+#.#.###.#.###.#
+#.....#.#...#.#
+#.###.#####.#.#
+#.#.#.......#.#
+#.#.#####.###.#
+#...........#.#
+###.#.#####.#.#
+#...#.....#.#.#
+#.#.#.###.#.#.#
+#.....#...#.#.#
+#.###.#.#.#.#.#
+#S..#.....#...#
+###############", "\n")
+        inpuv = split("#################
 #...#...#...#..E#
 #.#.#.#.#.#.#.#.#
 #.#.#.#...#...#.#
@@ -68,130 +63,21 @@ function getInput(testing)
     return result
 end
 
-function main()
-    maze = getInput(false)
-    maze = blanket(maze, (1,100), (1,100))
-    maze = blanket(maze, (80,140),(80,140))
-    maze = simplify(maze, 100)
-    printMaze(maze)
-    mazeDo(maze)
-end
-
-function printMaze(maze)
-    for i in 1:size(maze)[1]
-        println(join(maze[i,:]))
-    end
-end
-
-function mazeDo(maze)
-    for i in 1:size(maze)[1]
-        for j in 1:size(maze)[2]
-            if maze[i,j] == "S"
-                println("$i, $j")
-                mazeDo(maze, Pos(i,j), Dir(1,0), 0)
-                return
-            end
-        end
-    end
-end
-
-function mazeDo(maze, pos, dir, cost)
-    global numThreads += 1
-    if numThreads == 1200
-        printMaze(maze)
-    end
-    
-    #println("t: $(numThreads)")
-    
-    nPos = nextPos(pos, dir)
-    nDir1 = nextDir1(dir)
-    nDir2 = nextDir2(dir)
-    nPos1 = nextPos(pos, nDir1)
-    nPos2 = nextPos(pos, nDir2)
-
-    if nPos.row > 0 && nPos.row <= size(maze)[1] && nPos.col > 0 && nPos.col <= size(maze)[2]
-        if maze[nPos.row, nPos.col] == "E"
-            #println(maze)
-            println("\$$(cost+1)")
-            push!(prices, cost+1)
-            global numThreads -= 1
-            return
-        elseif maze[nPos.row, nPos.col] == "."
-            cMaze = deepcopy(maze)
-            cMaze[nPos.row, nPos.col] = "*"
-            mazeDo(cMaze, nPos, dir, cost + 1)
-        end
-    end    
-    if nPos1.row > 0 && nPos1.row <= size(maze)[1] && nPos1.col > 0 && nPos1.col <= size(maze)[2]
-        if maze[nPos1.row, nPos1.col] == "E"
-            #println(maze)
-            println("\$$(cost+1001)")
-            push!(prices, cost+1001)
-            global numThreads -= 1
-            return
-        elseif maze[nPos1.row, nPos1.col] == "."
-            cMaze = deepcopy(maze)
-            cMaze[nPos1.row, nPos1.col] = "*"
-            mazeDo(cMaze, nPos1, nDir1, cost + 1001)
-        end
-    end
-    if nPos2.row > 0 && nPos2.row <= size(maze)[1] && nPos2.col > 0 && nPos2.col <= size(maze)[2]
-        if maze[nPos2.row, nPos2.col] == "E"
-            #println(maze)
-            println("\$$(cost+1001)")
-            push(prices, cost+1001)
-            global numThreads -= 1
-            return
-        elseif maze[nPos2.row, nPos2.col] == "."
-            cMaze = deepcopy(maze)
-            cMaze[nPos2.row, nPos2.col] = "*"
-            mazeDo(cMaze, nPos2, nDir2, cost + 1001)
-        end
-    end
-    global numThreads -= 1
-end
-
 function part2(testing)
     part1 = testing ? 11048 : 89460
+    endPoint = testing ? Pos(2,16) : Pos(2,140)
 
     maze = simplify(getInput(testing), 200)
     nMaze = numerify(deepcopy(maze), 0)
+    
+    #testing ? (maze[2,15]="#") : nothing
 
-    for i in 1:size(maze)[1]
-        for j in 1:size(maze)[2]
-            if !isnothing(tryparse(Int, nMaze[i,j]))
-                if parse(Int, nMaze[i,j]) > part1
-                    nMaze[i,j] = "#"
-                    maze[i,j] = "#"
-                end
-            end
-        end
+    for i=1:10
+        maze, nMaze = removeLocalMaxima(maze, nMaze)
     end
-
+    
     return maze, nMaze
     #return maze
-end
-
-function numerify(maze, lastRun)
-    complete = true
-
-    for i in 1:size(maze)[1]
-        for j in 1:size(maze)[2]
-            maze[i,j] == "." ? complete = false : nothing
-            maze[i,j] = determineCost(Pos(i,j), maze)
-        end
-    end
-    #complete ? (return maze) : return numerify(maze)
-
-    if complete
-        if lastRun > 10
-            return maze
-        else
-            return numerify(maze, lastRun + 1)
-        end
-    else
-        return numerify(maze, 0)
-    end
 end
 
 function determineCost(index::Pos, maze)
@@ -271,6 +157,150 @@ function determineCost(index::Pos, maze)
     
 end
 
+function isLocalMaximum(maze, pos::Pos)
+    numLess = 0
+    row = pos.row
+    col = pos.col
+
+    if row == 99 && col == 6
+        flag = true
+    else
+        flag = false
+    end
+    
+    val = tryparse(Int, maze[row,col])
+
+    isnothing(val) ? (return false) : nothing
+    
+    a = tryparse(Int, maze[row-1,col])
+    b = tryparse(Int, maze[row+1,col])
+    c = tryparse(Int, maze[row,col-1])
+    d = tryparse(Int, maze[row,col+1])
+
+    if flag
+        println("val: $val, a: $a, b: $b, c: $c, d: $d")
+    end
+
+    if !isnothing(a)
+        if a < val
+            numLess += 1
+        else
+            return false
+        end
+    end
+    
+    if !isnothing(b)
+        if b < val 
+            numLess += 1
+        else
+            return false
+        end
+    end
+    
+    if !isnothing(c)
+        if c < val
+            numLess += 1
+        else
+            return false
+        end
+    end
+
+    if !isnothing(d)
+        if d < val
+            numLess += 1
+        else
+            return false
+        end
+    end
+
+    if !isnothing(a) && !isnothing(b)
+        if abs(a-b) == 2
+            if isnothing(tryparse(Int, maze[row-2,col])) && isnothing(tryparse(Int, maze[row+2,col]))
+                return true
+            elseif abs(val-a)+abs(val-b) == 2000
+                if abs(val - value(maze[row-2,col])) == 2 || abs(val - value(maze[row+2,col])) == 2
+                    return false
+                else
+                    return true
+                end
+            else
+                return false
+            end
+        elseif abs(a-b) == 0
+            return true
+        end
+    end
+
+    if !isnothing(c) && !isnothing(d)
+        if abs(c-d) == 2
+            if value(maze[row,col-2])==-1 && value(maze[row,col+2])==-1
+                return true
+            elseif abs(val-c)+abs(val-d) == 2000
+                if abs(val-value(maze[row,col-2]))==2 || abs(val-value(maze[row,col+2]))==2
+                    return false
+                else
+                    return true
+                end
+            else
+                return false
+            end
+        elseif abs(c-d) == 0
+            return true
+        end
+    end
+
+    if numLess >= 2
+        return true
+    else
+        return false
+    end
+end
+
+function numerify(maze, lastRun)
+    complete = true
+
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            maze[i,j] == "." ? complete = false : nothing
+            maze[i,j] = determineCost(Pos(i,j), maze)
+        end
+    end
+    #complete ? (return maze) : return numerify(maze)
+
+    if complete
+        if lastRun > 10
+            return maze
+        else
+            return numerify(maze, lastRun + 1)
+        end
+    else
+        return numerify(maze, 0)
+    end
+end
+
+function prnt(maze)
+    for row in eachrow(maze)
+        println(join(row))
+    end
+end
+
+function removeLocalMaxima(maze, nMaze)
+    
+    for i in 2:size(maze)[1]-1
+        for j in 2:size(maze)[2]-1
+            if isLocalMaximum(nMaze, Pos(i,j))
+                maze[i,j] = "#"
+                nMaze[i,j] = "#"
+            end
+
+        end
+    end
+
+    maze, nMaze = simplify(maze, nMaze, 200)
+
+    return maze, nMaze
+end
+
 function simplify(maze, recursionLevel)
     for i in 1:size(maze)[1]
         for j in 1:size(maze)[2]
@@ -293,12 +323,22 @@ function simplify(maze, recursionLevel)
     end     
 end
 
-function blanket(maze, rowLims, colLims)
-    for i in rowLims[1]:rowLims[2]
-        for j in colLims[1]:colLims[2]
-            maze[i,j] = "#"
+function simplify(maze, nMaze, recursionLevel)
+    maze = simplify(maze, recursionLevel)
+
+    for i in 1:size(maze)[1]
+        for j in 1:size(maze)[2]
+            if maze[i,j] == "#"
+                nMaze[i,j] = "#"
+            end
         end
     end
 
-    return maze
+    return maze, nMaze
+end
+
+function value(item)
+    result = tryparse(Int, item)
+
+    isnothing(result) ? (return -1) : (return result)
 end
